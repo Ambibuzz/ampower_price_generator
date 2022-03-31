@@ -1,0 +1,108 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2022-03-31 09:51:40.499374",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user_contact_section",
+  "contact_name",
+  "column_break_3",
+  "contact_no",
+  "messenger_section",
+  "conversation",
+  "last_message_from_contact_section",
+  "last_message",
+  "new_message_section",
+  "new_message",
+  "send_message",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "user_contact_section",
+   "fieldtype": "Section Break",
+   "label": "User Contact"
+  },
+  {
+   "fieldname": "contact_name",
+   "fieldtype": "Link",
+   "label": "Contact Name",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_no",
+   "fieldtype": "Data",
+   "label": "Contact No"
+  },
+  {
+   "fieldname": "messenger_section",
+   "fieldtype": "Section Break",
+   "label": "Messenger"
+  },
+  {
+   "fieldname": "conversation",
+   "fieldtype": "HTML Editor",
+   "label": "Conversation"
+  },
+  {
+   "fieldname": "last_message_from_contact_section",
+   "fieldtype": "Section Break",
+   "label": "Last Message from Contact"
+  },
+  {
+   "fieldname": "last_message",
+   "fieldtype": "Small Text",
+   "label": "Last Message"
+  },
+  {
+   "fieldname": "new_message_section",
+   "fieldtype": "Section Break",
+   "label": "New Message"
+  },
+  {
+   "fieldname": "new_message",
+   "fieldtype": "Text",
+   "label": "New Message"
+  },
+  {
+   "fieldname": "send_message",
+   "fieldtype": "Button",
+   "label": "Send Message"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Messenger"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-03-31 09:52:38.952166",
+ "modified_by": "Administrator",
+ "module": "Messenger Integration",
+ "name": "Messenger",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
