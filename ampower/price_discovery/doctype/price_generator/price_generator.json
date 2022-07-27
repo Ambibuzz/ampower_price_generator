@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2022-07-27 09:59:37.928102",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "fg_item",
+  "item_name",
+  "item_group",
+  "amended_from",
+  "fg_item_uom",
+  "fg_item_quantity"
+ ],
+ "fields": [
+  {
+   "fieldname": "fg_item",
+   "fieldtype": "Link",
+   "label": "FG Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name"
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Data",
+   "label": "Item Group"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Price Generator",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "fg_item_uom",
+   "fieldtype": "Data",
+   "label": "FG Item UOM "
+  },
+  {
+   "fieldname": "fg_item_quantity",
+   "fieldtype": "Data",
+   "label": "FG Item Quantity"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2022-07-27 11:19:25.200407",
+ "modified_by": "Administrator",
+ "module": "Price Discovery",
+ "name": "Price Generator",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
