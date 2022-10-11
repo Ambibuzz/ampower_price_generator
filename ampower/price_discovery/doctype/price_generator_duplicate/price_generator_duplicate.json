@@ -2,32 +2,35 @@
  "actions": [],
  "allow_events_in_timeline": 1,
  "allow_rename": 1,
- "autoname": "format:{item}-{item_name}-{#####}",
- "creation": "2022-07-27 09:59:37.928102",
+ "autoname": "format:{fg_item}-{item_name}-{#####}",
+ "creation": "2022-10-08 21:00:55.785543",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "item",
+  "fg_item",
   "section_break_2",
   "item_name",
-  "item_uom",
+  "fg_item_uom",
+  "conversion_factor",
   "column_break_2",
   "item_group",
-  "item_quantity",
+  "fg_item_quantity",
   "item_uom_section",
   "uom",
   "list_of_bom_section",
-  "pg_bom_list",
+  "bom_table",
   "extract_item",
   "all_item_from_bom_section",
-  "pg_bom_item",
+  "bom_item",
   "new_item_for_price_discovery_section",
   "additional_item",
+  "amended_from",
   "section_break_17",
+  "calculate",
+  "section_break_19",
   "unit_price",
   "markup_",
-  "calculate",
   "column_break_21",
   "total_price",
   "total_markup_price",
@@ -40,16 +43,97 @@
  ],
  "fields": [
   {
-   "fetch_from": "item.item_name",
+   "fieldname": "fg_item",
+   "fieldtype": "Link",
+   "label": "FG Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "fg_item.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
    "label": "Item Name"
   },
   {
-   "fetch_from": "item.item_group",
+   "fieldname": "fg_item_uom",
+   "fieldtype": "Link",
+   "label": "FG Item UOM ",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "conversion_factor",
+   "fieldtype": "Data",
+   "label": "Conversion Factor"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "fg_item.item_group",
    "fieldname": "item_group",
    "fieldtype": "Data",
    "label": "Item Group"
+  },
+  {
+   "fieldname": "fg_item_quantity",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "FG Item Quantity",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_uom_section",
+   "fieldtype": "Section Break",
+   "label": "Item UOM"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Table",
+   "label": "UOM",
+   "options": "Price Generator UOM"
+  },
+  {
+   "fieldname": "list_of_bom_section",
+   "fieldtype": "Section Break",
+   "label": "List of BOM"
+  },
+  {
+   "fieldname": "bom_table",
+   "fieldtype": "Table",
+   "label": "BOM Table",
+   "options": "BOM List"
+  },
+  {
+   "fieldname": "extract_item",
+   "fieldtype": "Button",
+   "label": "Extract Item from BOM"
+  },
+  {
+   "fieldname": "all_item_from_bom_section",
+   "fieldtype": "Section Break",
+   "label": "All Item from BOM"
+  },
+  {
+   "fieldname": "bom_item",
+   "fieldtype": "Table",
+   "label": "BOM Item",
+   "options": "BOM Item List"
+  },
+  {
+   "fieldname": "new_item_for_price_discovery_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Item for Price Discovery"
+  },
+  {
+   "fieldname": "additional_item",
+   "fieldtype": "Table",
+   "label": "Additional Item",
+   "options": "Additional Item"
   },
   {
    "fieldname": "amended_from",
@@ -61,36 +145,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "list_of_bom_section",
-   "fieldtype": "Section Break",
-   "label": "List of BOM"
-  },
-  {
-   "fieldname": "all_item_from_bom_section",
-   "fieldtype": "Section Break",
-   "label": "All Item from BOM"
-  },
-  {
-   "fieldname": "new_item_for_price_discovery_section",
-   "fieldtype": "Section Break",
-   "label": "Additional Item for Price Discovery"
-  },
-  {
-   "fieldname": "column_break_2",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "extract_item",
-   "fieldtype": "Button",
-   "label": "Extract Item from BOM"
-  },
-  {
-   "fieldname": "additional_item",
-   "fieldtype": "Table",
-   "label": "Additional Item",
-   "options": "Additional Item"
-  },
-  {
    "fieldname": "section_break_17",
    "fieldtype": "Section Break"
   },
@@ -98,6 +152,10 @@
    "fieldname": "calculate",
    "fieldtype": "Button",
    "label": "Calculate"
+  },
+  {
+   "fieldname": "section_break_19",
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "unit_price",
@@ -154,61 +212,22 @@
    "read_only": 1
   },
   {
-   "fieldname": "item_uom_section",
-   "fieldtype": "Section Break",
-   "label": "Item UOM"
-  },
-  {
-   "fieldname": "uom",
-   "fieldtype": "Table",
-   "label": "UOM",
-   "options": "Price Generator UOM"
-  },
-  {
-   "description": "Finished Goods Only",
-   "fieldname": "item",
+   "fieldname": "amended_from",
    "fieldtype": "Link",
-   "label": "Item",
-   "options": "Item"
-  },
-  {
-   "fieldname": "item_uom",
-   "fieldtype": "Link",
-   "label": "Item UOM",
-   "options": "UOM"
-  },
-  {
-   "description": "Finished Good Item Quantity to Produce",
-   "fieldname": "item_quantity",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Item Quantity",
-   "reqd": 1
-  },
-  {
-   "fieldname": "pg_bom_item",
-   "fieldtype": "Table",
-   "label": "Price Generator BOM Item",
-   "options": "Price Generator BOM Item"
-  },
-  {
-   "fieldname": "section_break_2",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "pg_bom_list",
-   "fieldtype": "Table",
-   "label": "Price Generator BOM List",
-   "options": "Price Generator BOM List"
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Price Generator DUPLICATE",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-10-09 02:44:48.089555",
+ "modified": "2022-10-08 21:00:55.785543",
  "modified_by": "Administrator",
  "module": "Price Discovery",
- "name": "Price Generator",
+ "name": "Price Generator DUPLICATE",
  "owner": "Administrator",
  "permissions": [
   {
