@@ -62,8 +62,31 @@ frappe.ui.form.on('Price Generator', {
     },
     recalculate_prices: function (frm, cdt, cdn) {
         recalculate_prices(frm, cdt, cdn)
+    },
+    default_bom: function (frm, cdt, cdn) {
+        get_default_bom(frm, cdt, cdn)  
     }
 })
+
+// to get the default bom
+function get_default_bom(frm, cdt, cdn) {
+    var doc = frappe.get_doc( cdt, cdn)
+    frappe.db.get_list('BOM', {
+        filters: { "item": "11051",
+                   "is_active":"1",
+                   "is_default":"1"},
+        fields: ["name"]
+    }).then(res => {
+        console.log(res)
+        var table = {
+            "bom":res[0]["name"]
+        }
+        cur_frm.add_child("pg_bom_list",table)
+        refresh_field("pg_bom_list")
+    })
+
+
+}
 
 // to calculate per_unit price and total_price for all item in pg_bom_item
 function calculate(frm, cdt, cdn) {
@@ -71,6 +94,7 @@ function calculate(frm, cdt, cdn) {
     var doc = frappe.get_doc(cdt, cdn)
 
     var pg_bom_item = doc.pg_bom_item
+    var additional_item = doc.additional_item
     var _bom_price = 0.0;
     var _total_price = 0.0;
 
@@ -79,11 +103,11 @@ function calculate(frm, cdt, cdn) {
         _total_price = _total_price + pg_bom_item[i]["total_rate"]
     }
 
-    // if (doc.additional_item) {
-    //     for (var j = 0; i < additional_item.length; j++) {
-    //         _bom_price = _bom_price + additional_item[j]["total"]
-    //     }
-    // }
+    if (doc.additional_item) {
+        for (var j = 0; j < additional_item.length; j++) {
+            _total_price = _total_price + additional_item[j]["total_rate"]
+        }
+    }
 
     frappe.model.set_value(cdt, cdn, "total_price", _total_price);
 
@@ -279,34 +303,38 @@ function populate_item(frm, cdt, cdn) {
 }
 
 function recalculate_prices(frm, cdt, cdn) {
+    frm.save()
     var doc = frappe.get_doc(cdt, cdn)
 
     var bom_item = frm.doc.pg_bom_item
     var qty_to_produce = doc.item_quantity
 
     for (var i = 0; i < bom_item.length; i++) {
-        var conversion_factor;
-
-        doc.uom.map(m => {
-            if (m.uom == doc.item_uom) {
-                conversion_factor = m.conversion_factor
-            }
-        })
+        // var conversion_factor;
+        // doc.uom.map(m => {
+        //     if (m.uom == doc.item_uom) {
+        //         conversion_factor = m.conversion_factor
+        //     }
+        // })
 
         var cdt = bom_item[i]["doctype"]
         var cdn = bom_item[i]["name"]
         var idx = bom_item[i]["idx"]
 
-        var total_rate = (bom_item[i].qty_consumed_per_unit * conversion_factor) * bom_item[i]["rate"] * qty_to_produce
+        // var total_rate = (bom_item[i].qty_consumed_per_unit * conversion_factor) * bom_item[i]["rate"] * qty_to_produce
+        var total_rate = bom_item[i]["rate"] * bom_item[i]["qty"]
 
-        if (bom_item[i]["total_rate"] != total_rate) {
-            frappe.model.set_value(cdt, cdn, "total_rate", total_rate);
+        // if (bom_item[i]["total_rate"] != total_rate) {
+        //     frappe.model.set_value(cdt, cdn, "total_rate", total_rate);
 
-            var msg = "Total Rate Update for Item Code : " + bom_item[i]["item_code"].toString() + " at Row No: " + bom_item[i]["idx"].toString()
-            frappe.msgprint(msg)
-        }
+        //     var msg = "Total Rate Update for Item Code : " + bom_item[i]["item_code"].toString() + " at Row No: " + bom_item[i]["idx"].toString()
+        //     frappe.msgprint(msg)
+        // }
+
+        frappe.model.set_value(cdt, cdn, "total_rate", total_rate);
     }
-
+    var msg = "Total Rate recalculated"
+    frappe.msgprint(msg)
 }
 
 function sleep(milliseconds) {
@@ -396,11 +424,11 @@ frappe.ui.form.on('Price Generator Additional Item', {
 frappe.ui.form.on('Price Generator BOM List', {
     bom: function (frm, cdt, cdn) {
         var doc = frappe.get_doc(cdt, cdn)
-        frappe.db.get_doc('BOM', doc.bom).then(
-            result => {
-                frappe.model.set_value(cdt, cdn, "uom", result.uom);
-                frappe.model.set_value(cdt, cdn, "qty", result.quantity);
-            })
+        // frappe.db.get_doc('BOM', doc.bom).then(
+        //     result => {
+        //         frappe.model.set_value(cdt, cdn, "uom", result.uom);
+        //         frappe.model.set_value(cdt, cdn, "qty", result.quantity);
+        //     })
     },
     uom: function (frm, cdt, cdn) {
         var doc = frappe.get_doc(cdt, cdn)

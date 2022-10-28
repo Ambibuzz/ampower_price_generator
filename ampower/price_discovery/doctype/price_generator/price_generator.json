@@ -22,8 +22,8 @@
   "pg_bom_list",
   "all_item_from_bom_section",
   "extract_item",
-  "recalculate_prices",
   "pg_bom_item",
+  "recalculate_prices",
   "new_item_for_price_discovery_section",
   "calculate_total",
   "additional_item",
@@ -116,7 +116,8 @@
   {
    "fieldname": "markup_",
    "fieldtype": "Data",
-   "label": "Markup %"
+   "label": "Markup %",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_21",
@@ -236,7 +237,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-10-28 12:58:36.238278",
+ "modified": "2022-10-28 15:36:49.969928",
  "modified_by": "Administrator",
  "module": "Price Discovery",
  "name": "Price Generator",
