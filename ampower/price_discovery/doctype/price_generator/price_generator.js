@@ -8,13 +8,13 @@ frappe.ui.form.on('Price Generator', {
     onload: function (frm, cdt, cdn) {
         console.log("DEBUGGER")
         // filter to get only finished good item
-        frm.set_query("item", function () {
-            return {
-                "filters": {
-                    "is_sales_item": "1"
-                }
-            }
-        })
+        // frm.set_query("item", function () {
+        //     return {
+        //         "filters": {
+        //             "is_sales_item": "1"
+        //         }
+        //     }
+        // })
     },
     item: function (frm, cdt, cdn) {
         get_uom(frm, cdt, cdn)
@@ -33,7 +33,7 @@ frappe.ui.form.on('Price Generator', {
 
 
         collect_items(frm, cdt, cdn)
-        
+
         // getting item from BOM takes time so added timeout/sleep
         // sleep(3000)
         setTimeout(() => {
@@ -56,11 +56,18 @@ frappe.ui.form.on('Price Generator', {
     },
     item_uom: function (frm, cdt, cdn) {
         check_uom(frm, cdt, cdn)
+    },
+    calculate_total: function (frm, cdt, cdn) {
+        calculate_total(frm, cdt, cdn);
+    },
+    recalculate_prices: function (frm, cdt, cdn) {
+        recalculate_prices(frm, cdt, cdn)
     }
 })
 
 // to calculate per_unit price and total_price for all item in pg_bom_item
 function calculate(frm, cdt, cdn) {
+    frm.save()
     var doc = frappe.get_doc(cdt, cdn)
 
     var pg_bom_item = doc.pg_bom_item
@@ -186,13 +193,13 @@ function get_uom(frm, cdt, cdn) {
                 refresh_field("uom")
                 valid_uom = valid_uom + (result[i]["uom"]).toString() + ","
             }
-            
+
             // setting filter for additional_item uom selection
-            frm.fields_dict['additional_item'].grid.get_field("uom").get_query = function(doc, cdt, cdn) {
-                return {
-                    filters: [["UOM", "uom_name", "in", valid_uom]]
-                }
-            }
+            // frm.fields_dict['additional_item'].grid.get_field("uom").get_query = function(doc, cdt, cdn) {
+            //     return {
+            //         filters: [["UOM", "uom_name", "in", valid_uom]]
+            //     }
+            // }
         }
     })
 }
@@ -202,7 +209,7 @@ function get_uom(frm, cdt, cdn) {
 function collect_items(frm, cdt, cdn) {
     var doc = frappe.get_doc(cdt, cdn)
 
-    if (!doc.pg_bom_list || doc.pg_bom_list.length <= 0){
+    if (!doc.pg_bom_list || doc.pg_bom_list.length <= 0) {
         frappe.msgprint("Please add BOM to Price Generator BOM List")
         return
     }
@@ -257,18 +264,49 @@ function populate_item(frm, cdt, cdn) {
             "item_name": item_table[i].item_name,
             "qty": item_table[i].qty_consumed_per_unit * conversion_factor * qty_to_produce,
             "qty_consumed_per_unit": item_table[i].qty_consumed_per_unit,
-            "rate": item_table[i].rate,
+            "rate": (item_table[i].qty_consumed_per_unit * conversion_factor) * item_table[i].rate,
             "uom": item_table[i].uom,
             // pg_quantity is per unit for UOM selected in Price Discovery
-            "pg_quantity": item_table[i].qty_consumed_per_unit * conversion_factor,
+            // "pg_quantity": item_table[i].qty_consumed_per_unit * conversion_factor,
             // pg_rate is price per unit for UOM selected in Price Discovery
-            "pg_rate": (item_table[i].qty_consumed_per_unit * conversion_factor) * item_table[i].rate,
+            // "pg_rate": (item_table[i].qty_consumed_per_unit * conversion_factor) * item_table[i].rate,
             // total_rate is pd_rate multiply by qty_to_produce
             "total_rate": (item_table[i].qty_consumed_per_unit * conversion_factor) * item_table[i].rate * qty_to_produce
         };
         frm.add_child("pg_bom_item", table)
         refresh_field("pg_bom_item")
     }
+}
+
+function recalculate_prices(frm, cdt, cdn) {
+    var doc = frappe.get_doc(cdt, cdn)
+
+    var bom_item = frm.doc.pg_bom_item
+    var qty_to_produce = doc.item_quantity
+
+    for (var i = 0; i < bom_item.length; i++) {
+        var conversion_factor;
+
+        doc.uom.map(m => {
+            if (m.uom == doc.item_uom) {
+                conversion_factor = m.conversion_factor
+            }
+        })
+
+        var cdt = bom_item[i]["doctype"]
+        var cdn = bom_item[i]["name"]
+        var idx = bom_item[i]["idx"]
+
+        var total_rate = (bom_item[i].qty_consumed_per_unit * conversion_factor) * bom_item[i]["rate"] * qty_to_produce
+
+        if (bom_item[i]["total_rate"] != total_rate) {
+            frappe.model.set_value(cdt, cdn, "total_rate", total_rate);
+
+            var msg = "Total Rate Update for Item Code : " + bom_item[i]["item_code"].toString() + " at Row No: " + bom_item[i]["idx"].toString()
+            frappe.msgprint(msg)
+        }
+    }
+
 }
 
 function sleep(milliseconds) {
@@ -283,46 +321,76 @@ function countObjectKeys(obj) {
     return Object.keys(obj).length;
 }
 
-frappe.ui.form.on('Additional Item', {
-    item: function (frm, cdt, cdn) {
+function calculate_total(frm, cdt, cdn) {
+    var additional_item = frm.doc.additional_item
+    for (var i = 0; i < additional_item.length; i++) {
+        // row by row
+        var cdt = additional_item[i]["doctype"]
+        var cdn = additional_item[i]["name"]
+        var qty = additional_item[i]["qty"]
+        var rate = additional_item[i]["rate"]
+        if ((!qty || !rate) || (qty < 0 || rate < 0)) {
+            var msg = "Please update value into qty and rate with greater than 0 at Row No: " + additional_item[i]["idx"].toString()
+            frappe.msgprint(msg)
+            continue;
+        }
+        var total_rate = qty * rate
+        frappe.model.set_value(cdt, cdn, "total_rate", total_rate);
+    }
+}
+
+frappe.ui.form.on('Price Generator Additional Item', {
+    item_code: function (frm, cdt, cdn) {
         var doc = frappe.get_doc(cdt, cdn)
-        if (doc.item) {
-            frappe.db.get_doc('Item', doc.item).then(
+        if (doc.item_code) {
+            frappe.db.get_doc('Item', doc.item_code).then(
                 result => {
-                    frappe.model.set_value(cdt, cdn, "item_rate", result["valuation_rate"]);
+                    frappe.model.set_value(cdt, cdn, "uom", result["stock_uom"]);
                 }
             )
         }
     },
-    item_quantity: function (frm, cdt, cdn) {
+    qty: function (frm, cdt, cdn) {
         var doc = frappe.get_doc(cdt, cdn)
-        if (!doc.item) {
+        if (!doc.item_code) {
             frappe.msgprint("Please Select an Item first")
-            frappe.model.set_value(cdt, cdn, "item_quantity", 0);
+            frappe.model.set_value(cdt, cdn, "qty", 0);
         }
-        else {
-            var total = doc.item_rate * doc.item_quantity
-            frappe.model.set_value(cdt, cdn, "total", total);
-        }
+        // else {
+        //     var total = doc.rate * doc.qty
+        //     frappe.model.set_value(cdt, cdn, "total_rate", total);
+        // }
     },
-    uom: function (frm, cdt, cdn) {
+    rate: function (frm, cdt, cdn) {
         var doc = frappe.get_doc(cdt, cdn)
-        var conversion_factor = 0;
+        if (!doc.item_code) {
+            frappe.msgprint("Please Select an Item first")
+            frappe.model.set_value(cdt, cdn, "rate", 0);
+        }
 
-        // get conversion_factor after mapping Price Discovery's selected UOM
-        // and uom comming from Item Master 
-        cur_frm.doc.uom.map(m => {
-            if (m.uom == doc.uom) {
-                conversion_factor = m.conversion_factor
-            }
-        })
-
-        if (conversion_factor == 0) {
-            var msg = "Additional Item " + String(doc.item_name) + " has no Conversion with Item : " + String(cur_frm.doc.item)
-            frappe.msgprint(msg)
-            cur_frm.get_field("additional_item").grid.grid_rows[doc.idx - 1].remove();
+        if (!doc.qty) {
+            frappe.msgprint("Please add Qty for the Item first")
+            frappe.model.set_value(cdt, cdn, "rate", 0);
         }
     }
+    // uom: function (frm, cdt, cdn) {
+    //     var doc = frappe.get_doc(cdt, cdn)
+    //     var conversion_factor = 0;
+
+    //     // get conversion_factor after mapping Price Discovery's selected UOM
+    //     // and uom comming from Item Master 
+    //     cur_frm.doc.uom.map(m => {
+    //         if (m.uom == doc.uom) {
+    //             conversion_factor = m.conversion_factor
+    //         }
+    //     })
+
+    //     if (conversion_factor == 0) {
+    //         var msg = "Additional Item " + String(doc.item_name) + " has no Conversion with Item : " + String(cur_frm.doc.item)
+    //         frappe.msgprint(msg)
+    //         cur_frm.get_field("additional_item").grid.grid_rows[doc.idx - 1].remove();
+    //     }
+    // }
 })
 
 frappe.ui.form.on('Price Generator BOM List', {
@@ -354,7 +422,7 @@ frappe.ui.form.on('Price Generator BOM List', {
         if (doc.item_uom != uom_found) {
             var msg = "BOM " + String(doc.bom) + " has no Conversion for Item : " + String(cur_frm.doc.item)
             frappe.msgprint(msg)
-            
+
             // clear the entered entry inside BOM List due to no match found
             cur_frm.get_field("pg_bom_list").grid.grid_rows[doc.idx - 1].remove();
         }

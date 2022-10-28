@@ -1,3 +1,2 @@
 Ampower
-Messenger Integration
 Price Discovery

@@ -18,11 +18,14 @@
   "item_uom_section",
   "uom",
   "list_of_bom_section",
+  "default_bom",
   "pg_bom_list",
-  "extract_item",
   "all_item_from_bom_section",
+  "extract_item",
+  "recalculate_prices",
   "pg_bom_item",
   "new_item_for_price_discovery_section",
+  "calculate_total",
   "additional_item",
   "section_break_17",
   "unit_price",
@@ -43,13 +46,15 @@
    "fetch_from": "item.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
-   "label": "Item Name"
+   "label": "Item Name",
+   "read_only": 1
   },
   {
    "fetch_from": "item.item_group",
    "fieldname": "item_group",
    "fieldtype": "Data",
-   "label": "Item Group"
+   "label": "Item Group",
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",
@@ -61,11 +66,14 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval: doc.item_quantity > 0;",
+   "description": "Default BOM for the above selected Item and New BOM can be added to Calculate Price Distribution",
    "fieldname": "list_of_bom_section",
    "fieldtype": "Section Break",
    "label": "List of BOM"
   },
   {
+   "description": "From above selected BOM, all Exploded Item will be extracted with their Calculated Quantity and Rates as per the Item Quantity entered in the Item Detail Section and the Available UOM Conversion",
    "fieldname": "all_item_from_bom_section",
    "fieldtype": "Section Break",
    "label": "All Item from BOM"
@@ -88,7 +96,7 @@
    "fieldname": "additional_item",
    "fieldtype": "Table",
    "label": "Additional Item",
-   "options": "Additional Item"
+   "options": "Price Generator Additional Item"
   },
   {
    "fieldname": "section_break_17",
@@ -154,22 +162,28 @@
    "read_only": 1
   },
   {
+   "collapsible": 1,
+   "depends_on": "eval: doc.item",
+   "description": "These are the available conversion for the above Selected Item",
    "fieldname": "item_uom_section",
    "fieldtype": "Section Break",
-   "label": "Item UOM"
+   "label": "Available UOM Conversion for Item"
   },
   {
+   "depends_on": "eval: doc.item",
    "fieldname": "uom",
    "fieldtype": "Table",
    "label": "UOM",
-   "options": "Price Generator UOM"
+   "options": "Price Generator UOM",
+   "read_only": 1
   },
   {
    "description": "Finished Goods Only",
    "fieldname": "item",
    "fieldtype": "Link",
    "label": "Item",
-   "options": "Item"
+   "options": "Item",
+   "reqd": 1
   },
   {
    "fieldname": "item_uom",
@@ -192,20 +206,37 @@
    "options": "Price Generator BOM Item"
   },
   {
+   "depends_on": "eval: doc.item",
    "fieldname": "section_break_2",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Item Details"
   },
   {
    "fieldname": "pg_bom_list",
    "fieldtype": "Table",
    "label": "Price Generator BOM List",
    "options": "Price Generator BOM List"
+  },
+  {
+   "fieldname": "default_bom",
+   "fieldtype": "Button",
+   "label": "Get Default BOM"
+  },
+  {
+   "fieldname": "recalculate_prices",
+   "fieldtype": "Button",
+   "label": "ReCalculate Prices"
+  },
+  {
+   "fieldname": "calculate_total",
+   "fieldtype": "Button",
+   "label": "Calculate Total"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-10-09 02:44:48.089555",
+ "modified": "2022-10-28 12:58:36.238278",
  "modified_by": "Administrator",
  "module": "Price Discovery",
  "name": "Price Generator",

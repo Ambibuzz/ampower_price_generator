@@ -4,5 +4,5 @@
 # import frappe
 from frappe.model.document import Document
 
-class PriceGeneratorDUPLICATE(Document):
+class PriceGeneratorAdditionalItem(Document):
 	pass
