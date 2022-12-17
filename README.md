@@ -31,7 +31,7 @@ Similar issues in creating quotation can be observed for any organization which 
 
 *Price Generator and Price Discovery have been interchangeably used in this text as well as the code*
 
-![High level view of the Price Generator Application](doc/images/business_case.png)
+![High level view of the Price Generator Application](doc/images/business_case.jpg)
 
 ### How to Install
 [Refer this URL](https://frappeframework.com/docs/v14/user/en/basics/apps#installing-an-app-into-a-site)  for detailed instructions on how to install a third-party app on a Frappe Bench.
@@ -53,14 +53,14 @@ You can check the exact name of the App from the `frappe-bench/apps/` folder.
 
 Create a new Price Generator Form which by searching for **Price Generator** in the search bar:
 
-![Step 1 - Create a new Price Generator Document](doc/images/shot1_pricegenerator.png)
+![Step 1 - Create a new Price Generator Document](doc/images/shot1_pricegenerator.jpg)
 
 ##### Step 1,2,3: Select the Finished Good and fetch its Default BoM
 
 In the field `Item`, complete list of items in the site's Item List would be visible. Here, an item has to be selected which is expected to be on the Quotation. Once this item is selected, its Name, Item Group and default UoM would be auto-fetched.
 The UoM can be changed to reflect the Quotation UoM (packaging type). The Quantity field should be updated with quantity of the UoM selected for which Quotation has to be created.
 
-![Step 2 - Select Finished Good Item and its UoM and Quantity](doc/images/shot2_get_item_and_bom.png)
+![Step 2 - Select Finished Good Item and its UoM and Quantity](doc/images/shot2_get_item_and_bom.jpg)
 
 ##### Step 4,5,6: Fetch and configure constituent BoMs
 
@@ -68,13 +68,13 @@ One can fetch the default BoM OR add any number of BoMs which can make up the fi
 Here, care has to be taken that the BoM being selected **should** have the UoM which is available in the *Available UoM Conversion for Item* table which is fetched from the Item Document. That is important to map between two different UoM. For example, how many liters of a particular chemical form 1Kg of a powder once manufactured.
 Once added, the Quantity of the BoM cannot be edited as these are from submitted BoM document and define a ratio of items (raw materials) required to create equivalent quantity. Though, in the next step the individual components can be modifed (for Rate and Quantity)
 
-![Step 3 - Add additional constituent BoMS](doc/images/shot3_bom_fetch_and_recalculate.png)
+![Step 3 - Add additional constituent BoMS](doc/images/shot3_bom_fetch_and_recalculate.jpg)
 
 ##### Step 7,8: Fetch Sub-assembly and configure individual constituent items
 
 Fetch the sub-assemblies of the BoM selected in the table above. This would break all the BoMs into their individual items, their Rate and Quantities being fetched from BoM and adjusted for UoM Ratio.
 
-![Step 4 - Fetch BoM Sub-assemblies and configure](doc/images/shot4_calculate_totals.png)
+![Step 4 - Fetch BoM Sub-assemblies and configure](doc/images/shot4_calculate_totals.jpg)
 
 ##### Step 9: Create Quotation
 
