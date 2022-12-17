@@ -9,9 +9,9 @@ from ampower import __version__ as version
 setup(
 	name="ampower",
 	version=version,
-	description="Powered by Ambibuzz",
-	author="n ithead@ambibuzz.com",
-	author_email="ithead@ambibuzz.com",
+	description="AmPower Price Generator Application",
+	author="Ambibuzz Technologies LLP",
+	author_email="buzz.us@ambibuzz.com",
 	packages=find_packages(),
 	zip_safe=False,
 	include_package_data=True,
