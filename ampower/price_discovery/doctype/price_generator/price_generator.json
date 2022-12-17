@@ -1,0 +1,277 @@
+{
+ "actions": [],
+ "allow_events_in_timeline": 1,
+ "allow_rename": 1,
+ "autoname": "format:{item}-{item_name}-{#####}",
+ "creation": "2022-07-27 09:59:37.928102",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item",
+  "section_break_2",
+  "item_name",
+  "item_uom",
+  "column_break_2",
+  "item_group",
+  "item_quantity",
+  "item_uom_section",
+  "uom",
+  "list_of_bom_section",
+  "default_bom",
+  "pg_bom_list",
+  "all_item_from_bom_section",
+  "extract_item",
+  "pg_bom_item",
+  "recalculate_prices",
+  "new_item_for_price_discovery_section",
+  "calculate_total",
+  "additional_item",
+  "section_break_17",
+  "unit_price",
+  "markup_",
+  "calculate",
+  "column_break_21",
+  "total_price",
+  "total_markup_price",
+  "section_break_24",
+  "customer",
+  "create_quotation",
+  "column_break_27",
+  "customer_name",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fetch_from": "item.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Data",
+   "label": "Item Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Price Generator",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.item_quantity > 0;",
+   "description": "Default BOM for the above selected Item and New BOM can be added to Calculate Price Distribution",
+   "fieldname": "list_of_bom_section",
+   "fieldtype": "Section Break",
+   "label": "List of BOM"
+  },
+  {
+   "description": "From above selected BOM, all Exploded Item will be extracted with their Calculated Quantity and Rates as per the Item Quantity entered in the Item Detail Section and the Available UOM Conversion",
+   "fieldname": "all_item_from_bom_section",
+   "fieldtype": "Section Break",
+   "label": "All Item from BOM"
+  },
+  {
+   "fieldname": "new_item_for_price_discovery_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Item for Price Discovery"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "extract_item",
+   "fieldtype": "Button",
+   "label": "Extract Item from BOM"
+  },
+  {
+   "fieldname": "additional_item",
+   "fieldtype": "Table",
+   "label": "Additional Item",
+   "options": "Price Generator Additional Item"
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "calculate",
+   "fieldtype": "Button",
+   "label": "Calculate"
+  },
+  {
+   "fieldname": "unit_price",
+   "fieldtype": "Float",
+   "label": "Unit Price",
+   "precision": "2"
+  },
+  {
+   "fieldname": "markup_",
+   "fieldtype": "Data",
+   "label": "Markup %",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_price",
+   "fieldtype": "Float",
+   "label": "Total Price",
+   "length": 2
+  },
+  {
+   "fieldname": "total_markup_price",
+   "fieldtype": "Float",
+   "label": "Total Markup Price",
+   "precision": "2"
+  },
+  {
+   "fieldname": "section_break_24",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "depends_on": "eval: doc.customer",
+   "fieldname": "create_quotation",
+   "fieldtype": "Button",
+   "label": "Create Quotation"
+  },
+  {
+   "fieldname": "column_break_27",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval: doc.item",
+   "description": "These are the available conversion for the above Selected Item",
+   "fieldname": "item_uom_section",
+   "fieldtype": "Section Break",
+   "label": "Available UOM Conversion for Item"
+  },
+  {
+   "depends_on": "eval: doc.item",
+   "fieldname": "uom",
+   "fieldtype": "Table",
+   "label": "UOM",
+   "options": "Price Generator UOM",
+   "read_only": 1
+  },
+  {
+   "description": "Finished Goods Only",
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_uom",
+   "fieldtype": "Link",
+   "label": "Item UOM",
+   "options": "UOM"
+  },
+  {
+   "description": "Finished Good Item Quantity to Produce",
+   "fieldname": "item_quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Item Quantity",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pg_bom_item",
+   "fieldtype": "Table",
+   "label": "Price Generator BOM Item",
+   "options": "Price Generator BOM Item"
+  },
+  {
+   "depends_on": "eval: doc.item",
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Item Details"
+  },
+  {
+   "fieldname": "pg_bom_list",
+   "fieldtype": "Table",
+   "label": "Price Generator BOM List",
+   "options": "Price Generator BOM List"
+  },
+  {
+   "fieldname": "default_bom",
+   "fieldtype": "Button",
+   "label": "Get Default BOM"
+  },
+  {
+   "fieldname": "recalculate_prices",
+   "fieldtype": "Button",
+   "label": "ReCalculate Prices"
+  },
+  {
+   "fieldname": "calculate_total",
+   "fieldtype": "Button",
+   "label": "Calculate Total"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2022-10-28 15:36:49.969928",
+ "modified_by": "Administrator",
+ "module": "Price Discovery",
+ "name": "Price Generator",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
