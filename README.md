@@ -82,7 +82,7 @@ Use the Markup field to define a markup which would generate the **Total Markup 
 Don't forget to click on "Calculate" once changes are done on the Markup %.
 Select the Customer and create Quotation. Quotation would be created in the background and the name of the Quotation would be shown at the bottom right of the screen in a floating message.
 
-![Step 5 - Create Quotation](doc/images/shot5_create_quotation.png)
+![Step 5 - Create Quotation](doc/images/shot5_create_quotation.jpg)
 
 ### Known Limitations
 - In case the finished good and the BoM selected do not have a common UoM, the application cannot function as it cannot map between the quantity-UoM combination of item to Quote and the BoM.
