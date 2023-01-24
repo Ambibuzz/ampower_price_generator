@@ -7,16 +7,8 @@ var item_table = []
 frappe.ui.form.on('Price Generator', {
     onload: function (frm, cdt, cdn) {
         console.log("DEBUGGER")
-        // filter to get only finished good item
-        // frm.set_query("item", function () {
-        //     return {
-        //         "filters": {
-        //             "is_sales_item": "1"
-        //         }
-        //     }
-        // })
     },
-    item: function (frm, cdt, cdn) {
+    item: function (frm, cdt, cdn) { //current doctype (cdt) current document name (cdn)
         get_uom(frm, cdt, cdn)
     },
     extract_item: function (frm, cdt, cdn) {
@@ -30,8 +22,6 @@ frappe.ui.form.on('Price Generator', {
             frappe.msgprint("Please add quantity to be produced in Item Qunatity")
             return;
         }
-
-
         collect_items(frm, cdt, cdn)
 
         // getting item from BOM takes time so added timeout/sleep
@@ -64,38 +54,36 @@ frappe.ui.form.on('Price Generator', {
         recalculate_prices(frm, cdt, cdn)
     },
     default_bom: function (frm, cdt, cdn) {
-        get_default_bom(frm, cdt, cdn)  
+        get_default_bom(frm, cdt, cdn)
     }
 })
 
 // to get the default bom
 function get_default_bom(frm, cdt, cdn) {
-    var doc = frappe.get_doc( cdt, cdn)
-    frappe.db.get_list('BOM', {
-        filters: { "item": "11051",
-                   "is_active":"1",
-                   "is_default":"1"},
-        fields: ["name"]
-    }).then(res => {
-        console.log(res)
-        var table = {
-            "bom":res[0]["name"]
-        }
-        cur_frm.add_child("pg_bom_list",table)
-        refresh_field("pg_bom_list")
-    })
-
-
+    var doc = frappe.get_doc(cdt, cdn)
+    frappe.call('ampower.price_discovery.doctype.price_generator.price_generator.get_default_bom', { doc: doc })
+        .then(res => {
+            if ("message" in res) {
+                if ('name' in res['message']) {
+                    var table = {
+                        "bom": res['message']['name']
+                    }
+                    cur_frm.add_child("pg_bom_list", table)
+                    refresh_field("pg_bom_list")
+                }
+            }
+            else {
+                frappe.msgprint("Defalut BOM not available");
+            }
+        })
 }
 
 // to calculate per_unit price and total_price for all item in pg_bom_item
 function calculate(frm, cdt, cdn) {
     frm.save()
     var doc = frappe.get_doc(cdt, cdn)
-
     var pg_bom_item = doc.pg_bom_item
     var additional_item = doc.additional_item
-    var _bom_price = 0.0;
     var _total_price = 0.0;
 
     // adding all items in pg_bom_item 
@@ -127,29 +115,13 @@ function calculate(frm, cdt, cdn) {
 function quotation_creation(frm, cdt, cdn) {
     var doc = frappe.get_doc(cdt, cdn)
     var qty = doc.item_quantity
-
     if (!doc.unit_price || !doc.markup_ || !doc.total_markup_price) {
         frappe.msgprint("Please Press Calculate")
         return;
     }
-
-    frappe.db.insert({
-        doctype: 'Quotation',
-        quotation_to: "Customer",
-        party_name: doc.customer_name,
-        customer_name: doc.customer_name,
-        company: frappe.user_defaults.company,
-        order_type: 'Sales',
-        items: [
-            {
-                'item_code': doc.item,
-                'qty': qty,
-                'uom': doc.item_uom,
-                'rate': doc.unit_price
-            },
-        ]
-    }).then(function (doc) {
-        frappe.show_alert(`${doc.doctype} ${doc.name} created!`);
+    frappe.call('ampower.price_discovery.doctype.price_generator.price_generator.quotation_creation', { doc: doc , qty: qty})
+    .then(function () {
+        frappe.show_alert(`${doc.name} quotation created!`);
         frm.save()
     });
 }
@@ -160,21 +132,7 @@ function check_uom(frm, cdt, cdn) {
     var doc = frappe.get_doc(cdt, cdn)
     var uom_list = []
     if (doc.item) {
-        frappe.db.get_doc('Item', doc.item).then(
-            result => {
-                if (result["uoms"].length != 0) {
-                    result["uoms"].map(d => {
-                        if (d.uom == cur_frm.doc.item_uom) {
-                            uom_list = d
-                        }
-                    })
-                    if (uom_list.length == 0) {
-                        var msg = "UOM not matched for any Conversion "
-                        frappe.msgprint(msg)
-                    }
-                }
-            }
-        )
+        frappe.call('ampower.price_discovery.doctype.price_generator.price_generator.check_uom', { docType: 'Item' , doc : doc})
     }
 }
 
@@ -186,44 +144,24 @@ function get_uom(frm, cdt, cdn) {
         result => {
             if (result["uoms"].length != 0) {
                 frappe.model.set_value(cdt, cdn, "item_uom", (result["stock_uom"]))
-                // frappe.model.set_value(cdt, cdn, "conversion_factor", (result["uoms"][0]["conversion_factor"]))
             }
-            // else {
-            //     var msg = "UOM missing with " + doc.item + "<br><br>Conversion Factor SET to 1"
-            //     frappe.msgprint(msg)
-            //     frappe.model.set_value(cdt, cdn, "conversion_factor", 1)
-            // }
         })
-
     if (doc.uom && doc.uom.length > 0) {
         frm.clear_table("uom")
     }
-
-
-    // to add filters for to addition_item uom selection
+    // add filters for addition_item uom selection
     var valid_uom = ""
-    frappe.db.get_list('UOM Conversion Detail', {
-        filters: { 'parent': doc.item },
-        fields: ["*"]
-    }).then(result => {
-        if (result.length > 0) {
-            var table = {}
+    frappe.call('ampower.price_discovery.doctype.price_generator.price_generator.get_uom_conversion_detail', {doc: doc}).then(result => {
+        if (result.message !== undefined) {
+            result = result.message
             for (var i = 0; i < result.length; i++) {
-                table = {
+                frm.add_child("uom", {
                     "uom": result[i]["uom"],
                     "conversion_factor": result[i]["conversion_factor"]
-                }
-                frm.add_child("uom", table)
+                })
                 refresh_field("uom")
                 valid_uom = valid_uom + (result[i]["uom"]).toString() + ","
             }
-
-            // setting filter for additional_item uom selection
-            // frm.fields_dict['additional_item'].grid.get_field("uom").get_query = function(doc, cdt, cdn) {
-            //     return {
-            //         filters: [["UOM", "uom_name", "in", valid_uom]]
-            //     }
-            // }
         }
     })
 }
@@ -232,12 +170,10 @@ function get_uom(frm, cdt, cdn) {
 // and add to global variable item_table
 function collect_items(frm, cdt, cdn) {
     var doc = frappe.get_doc(cdt, cdn)
-
     if (!doc.pg_bom_list || doc.pg_bom_list.length <= 0) {
         frappe.msgprint("Please add BOM to Price Generator BOM List")
         return
     }
-
     for (var i = 0; i < doc.pg_bom_list.length; i++) {
         // get BOM data from bom entered in BOM List one by one
         frappe.db.get_doc('BOM', doc.pg_bom_list[i]["bom"]).then(
@@ -246,7 +182,6 @@ function collect_items(frm, cdt, cdn) {
                 if (!data || data.length <= 0) {
                     return;
                 }
-
                 for (var k = 0; k < data["exploded_items"].length; k++) {
                     // adding BOM's UOM to data for further calculation requirement
                     doc.pg_bom_list.map(m => {
@@ -268,9 +203,9 @@ function collect_items(frm, cdt, cdn) {
 // populate pg_bom_item table with conversion calculation 
 function populate_item(frm, cdt, cdn) {
     var doc = frappe.get_doc(cdt, cdn)
+    console.log(doc);
     var qty_to_produce = doc.item_quantity
     var table = {}
-
     for (var i = 0; i < item_table.length; i++) {
         var conversion_factor;
 
@@ -290,11 +225,6 @@ function populate_item(frm, cdt, cdn) {
             "qty_consumed_per_unit": item_table[i].qty_consumed_per_unit,
             "rate": (item_table[i].qty_consumed_per_unit * conversion_factor) * item_table[i].rate,
             "uom": item_table[i].uom,
-            // pg_quantity is per unit for UOM selected in Price Discovery
-            // "pg_quantity": item_table[i].qty_consumed_per_unit * conversion_factor,
-            // pg_rate is price per unit for UOM selected in Price Discovery
-            // "pg_rate": (item_table[i].qty_consumed_per_unit * conversion_factor) * item_table[i].rate,
-            // total_rate is pd_rate multiply by qty_to_produce
             "total_rate": (item_table[i].qty_consumed_per_unit * conversion_factor) * item_table[i].rate * qty_to_produce
         };
         frm.add_child("pg_bom_item", table)
@@ -310,27 +240,10 @@ function recalculate_prices(frm, cdt, cdn) {
     var qty_to_produce = doc.item_quantity
 
     for (var i = 0; i < bom_item.length; i++) {
-        // var conversion_factor;
-        // doc.uom.map(m => {
-        //     if (m.uom == doc.item_uom) {
-        //         conversion_factor = m.conversion_factor
-        //     }
-        // })
 
         var cdt = bom_item[i]["doctype"]
         var cdn = bom_item[i]["name"]
-        var idx = bom_item[i]["idx"]
-
-        // var total_rate = (bom_item[i].qty_consumed_per_unit * conversion_factor) * bom_item[i]["rate"] * qty_to_produce
         var total_rate = bom_item[i]["rate"] * bom_item[i]["qty"]
-
-        // if (bom_item[i]["total_rate"] != total_rate) {
-        //     frappe.model.set_value(cdt, cdn, "total_rate", total_rate);
-
-        //     var msg = "Total Rate Update for Item Code : " + bom_item[i]["item_code"].toString() + " at Row No: " + bom_item[i]["idx"].toString()
-        //     frappe.msgprint(msg)
-        // }
-
         frappe.model.set_value(cdt, cdn, "total_rate", total_rate);
     }
     var msg = "Total Rate recalculated"
@@ -370,10 +283,15 @@ function calculate_total(frm, cdt, cdn) {
 frappe.ui.form.on('Price Generator Additional Item', {
     item_code: function (frm, cdt, cdn) {
         var doc = frappe.get_doc(cdt, cdn)
+        console.log(doc.item_code);
         if (doc.item_code) {
             frappe.db.get_doc('Item', doc.item_code).then(
                 result => {
+                    console.log("result");
+                    console.log(result);
+                    console.log('Price Generator Additional Item start');
                     frappe.model.set_value(cdt, cdn, "uom", result["stock_uom"]);
+                    console.log('Price Generator Additional Item end');
                 }
             )
         }
@@ -384,10 +302,6 @@ frappe.ui.form.on('Price Generator Additional Item', {
             frappe.msgprint("Please Select an Item first")
             frappe.model.set_value(cdt, cdn, "qty", 0);
         }
-        // else {
-        //     var total = doc.rate * doc.qty
-        //     frappe.model.set_value(cdt, cdn, "total_rate", total);
-        // }
     },
     rate: function (frm, cdt, cdn) {
         var doc = frappe.get_doc(cdt, cdn)
@@ -401,34 +315,11 @@ frappe.ui.form.on('Price Generator Additional Item', {
             frappe.model.set_value(cdt, cdn, "rate", 0);
         }
     }
-    // uom: function (frm, cdt, cdn) {
-    //     var doc = frappe.get_doc(cdt, cdn)
-    //     var conversion_factor = 0;
-
-    //     // get conversion_factor after mapping Price Discovery's selected UOM
-    //     // and uom comming from Item Master 
-    //     cur_frm.doc.uom.map(m => {
-    //         if (m.uom == doc.uom) {
-    //             conversion_factor = m.conversion_factor
-    //         }
-    //     })
-
-    //     if (conversion_factor == 0) {
-    //         var msg = "Additional Item " + String(doc.item_name) + " has no Conversion with Item : " + String(cur_frm.doc.item)
-    //         frappe.msgprint(msg)
-    //         cur_frm.get_field("additional_item").grid.grid_rows[doc.idx - 1].remove();
-    //     }
-    // }
 })
 
 frappe.ui.form.on('Price Generator BOM List', {
     bom: function (frm, cdt, cdn) {
         var doc = frappe.get_doc(cdt, cdn)
-        // frappe.db.get_doc('BOM', doc.bom).then(
-        //     result => {
-        //         frappe.model.set_value(cdt, cdn, "uom", result.uom);
-        //         frappe.model.set_value(cdt, cdn, "qty", result.quantity);
-        //     })
     },
     uom: function (frm, cdt, cdn) {
         var doc = frappe.get_doc(cdt, cdn)
